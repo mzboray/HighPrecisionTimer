@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HighPrecisionTimer", "HighPrecisionTimer\HighPrecisionTimer.csproj", "{F67353D6-1E54-4B18-9BF2-53DD27867983}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimerDemo", "TimerDemo\TimerDemo.csproj", "{70468CA5-872A-41D8-AFB2-5EAC1A9F59A9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F67353D6-1E54-4B18-9BF2-53DD27867983}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F67353D6-1E54-4B18-9BF2-53DD27867983}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F67353D6-1E54-4B18-9BF2-53DD27867983}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F67353D6-1E54-4B18-9BF2-53DD27867983}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70468CA5-872A-41D8-AFB2-5EAC1A9F59A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70468CA5-872A-41D8-AFB2-5EAC1A9F59A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70468CA5-872A-41D8-AFB2-5EAC1A9F59A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70468CA5-872A-41D8-AFB2-5EAC1A9F59A9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
