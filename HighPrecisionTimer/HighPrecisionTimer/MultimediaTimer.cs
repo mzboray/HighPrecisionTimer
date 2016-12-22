@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HighPrecisionTimer
@@ -13,9 +14,14 @@ namespace HighPrecisionTimer
     /// </summary>
     public class MultimediaTimer : IDisposable
     {
+        private const int EventTypeSingle = 0;
+        private const int EventTypePeriodic = 1;
+
+        private static readonly Task TaskDone = Task.FromResult<object>(null);
+
         private bool disposed = false;
         private int interval, resolution;
-        private UInt32 timerId;
+        private volatile uint timerId;
 
         // Hold the timer callback to prevent garbage collection.
         private readonly MultimediaTimerCallback Callback;
@@ -32,6 +38,9 @@ namespace HighPrecisionTimer
             Dispose(false);
         }
 
+        /// <summary>
+        /// The period of the timer in milliseconds.
+        /// </summary>
         public int Interval
         {
             get
@@ -51,7 +60,9 @@ namespace HighPrecisionTimer
             }
         }
 
-        // Note minimum resolution is 0, meaning highest possible resolution.
+        /// <summary>
+        /// The resolution of the timer in milliseconds. The minimum resolution is 0, meaning highest possible resolution.
+        /// </summary>
         public int Resolution
         {
             get
@@ -69,9 +80,37 @@ namespace HighPrecisionTimer
             }
         }
 
+        /// <summary>
+        /// Gets whether the timer has been started yet.
+        /// </summary>
         public bool IsRunning
         {
             get { return timerId != 0; }
+        }
+
+        public static Task Delay(int millisecondsDelay, CancellationToken token)
+        {
+            if (millisecondsDelay < 0)
+            {
+                throw new ArgumentOutOfRangeException("millisecondsDelay", millisecondsDelay, "The value cannot be less than 0.");
+            }
+
+            if (millisecondsDelay == 0)
+            {
+                return TaskDone;
+            }
+
+            token.ThrowIfCancellationRequested();
+
+            var completionSource = new TaskCompletionSource<object>();
+            MultimediaTimerCallback callback = (uint id, uint msg, ref uint uCtx, uint rsv1, uint rsv2) =>
+            {
+                NativeMethods.TimeKillEvent(id);
+                completionSource.TrySetResult(null);
+            };
+            UInt32 userCtx = 0;
+            var timerId = NativeMethods.TimeSetEvent((uint)millisecondsDelay, (uint)0, callback, ref userCtx, EventTypeSingle);
+            return completionSource.Task;
         }
 
         public void Start()
@@ -84,7 +123,7 @@ namespace HighPrecisionTimer
             // Event type = 0, one off event
             // Event type = 1, periodic event
             UInt32 userCtx = 0;
-            timerId = NativeMethods.TimeSetEvent((uint)Interval, (uint)Resolution, Callback, ref userCtx, 1);
+            timerId = NativeMethods.TimeSetEvent((uint)Interval, (uint)Resolution, Callback, ref userCtx, EventTypePeriodic);
             if (timerId == 0)
             {
                 int error = Marshal.GetLastWin32Error();

@@ -15,6 +15,7 @@ namespace TimerDemo
         {
             TestThreadingTimer();
             TestMultimediaTimer();
+            TestTask();
         }
 
         private static void TestMultimediaTimer()
@@ -37,6 +38,39 @@ namespace TimerDemo
             {
                 s.Start();
                 Console.ReadKey(true);
+            }
+        }
+
+        private static void TestTask()
+        {
+            try
+            {
+                using (var cancelled = new CancellationTokenSource())
+                {
+                    Console.CancelKeyPress += (o, e) => { cancelled.Cancel(); };
+                    TestTaskInner(cancelled.Token).GetAwaiter().GetResult();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private static async Task TestTaskInner(CancellationToken token)
+        {
+            Stopwatch s = Stopwatch.StartNew();
+            TimeSpan prevValue = TimeSpan.Zero;
+            int i = 0;
+            while (true)
+            {
+                Console.WriteLine(s.ElapsedMilliseconds);
+                await MultimediaTimer.Delay(1, token);
+                if (Console.KeyAvailable)
+                {
+                    return;
+                }
+
+                i++;
             }
         }
     }
