@@ -88,7 +88,7 @@ namespace HighPrecisionTimer
             get { return timerId != 0; }
         }
 
-        public static Task Delay(int millisecondsDelay, CancellationToken token)
+        public static Task Delay(int millisecondsDelay, CancellationToken token = default(CancellationToken))
         {
             if (millisecondsDelay < 0)
             {
@@ -102,14 +102,24 @@ namespace HighPrecisionTimer
 
             token.ThrowIfCancellationRequested();
 
-            var completionSource = new TaskCompletionSource<object>();
+            // allocate an object to hold the callback in the async state.
+            object[] state = new object[1];
+            var completionSource = new TaskCompletionSource<object>(state);
             MultimediaTimerCallback callback = (uint id, uint msg, ref uint uCtx, uint rsv1, uint rsv2) =>
             {
-                NativeMethods.TimeKillEvent(id);
+                // Note we don't need to kill the timer for one-off events.
                 completionSource.TrySetResult(null);
             };
+
+            state[0] = callback;
             UInt32 userCtx = 0;
             var timerId = NativeMethods.TimeSetEvent((uint)millisecondsDelay, (uint)0, callback, ref userCtx, EventTypeSingle);
+            if (timerId == 0)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw new Win32Exception(error);
+            }
+
             return completionSource.Task;
         }
 
